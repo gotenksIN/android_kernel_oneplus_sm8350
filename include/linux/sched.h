@@ -833,6 +833,19 @@ struct wake_q_node {
 	struct wake_q_node *next;
 };
 
+#define OPLUS_NR_CPUS (8)
+
+#if IS_ENABLED(CONFIG_OPLUS_FEATURE_CPU_JANKINFO)
+/* hot-thread */
+struct task_record {
+#define RECOED_WINSIZE			(1 << 8)
+#define RECOED_WINIDX_MASK		(RECOED_WINSIZE - 1)
+	u8 winidx;
+	u8 count;
+};
+#endif
+
+
 struct task_struct {
 #ifdef CONFIG_THREAD_INFO_IN_TASK
 	/*
@@ -1511,10 +1524,8 @@ struct task_struct {
 	int ux_depth;
 	u64 enqueue_time;
 	u64 inherit_ux_start;
-#ifdef CONFIG_MMAP_LOCK_OPT
-	int ux_once;
-	u64 get_mmlock_ts;
-	int get_mmlock;
+#ifdef CONFIG_OPLUS_UX_IM_FLAG
+	int ux_im_flag;
 #endif
 #ifdef CONFIG_OPLUS_FEATURE_SCHED_SPREAD
 	int lb_state;
@@ -1524,6 +1535,11 @@ struct task_struct {
 	struct task_info oplus_task_info;
 #endif
 #endif /* defined(OPLUS_FEATURE_SCHED_ASSIST) && defined(CONFIG_OPLUS_FEATURE_SCHED_ASSIST) */
+
+#if IS_ENABLED(CONFIG_OPLUS_FEATURE_CPU_JANKINFO)
+	struct task_record record[OPLUS_NR_CPUS];	/* 2*u64 */
+#endif
+
 #ifdef OPLUS_FEATURE_HEALTHINFO
 #ifdef CONFIG_OPLUS_JANK_INFO
 	int jank_trace;
@@ -1543,6 +1559,9 @@ struct task_struct {
 	struct frame_boost_group *fbg;
 	struct list_head fbg_list;
 	int fbg_depth;
+#endif
+#if IS_ENABLED(CONFIG_OPLUS_FEATURE_FDLEAK_CHECK)
+	unsigned int fdleak_flag;
 #endif
 #ifdef CONFIG_GCC_PLUGIN_STACKLEAK
 	unsigned long			lowest_stack;

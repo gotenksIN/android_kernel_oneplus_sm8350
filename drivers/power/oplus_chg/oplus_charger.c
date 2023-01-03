@@ -1783,6 +1783,45 @@ static const struct file_operations proc_charger_passedchg_reset_count_ops =
 	.owner = THIS_MODULE,
 };
 
+#define PROC_READ_MAX_SIZE 32
+#define PROC_READ_PAGE_SIZE 256
+static ssize_t proc_integrate_gauge_fcc_flag_read(struct file *filp,
+		char __user *buff, size_t count, loff_t *off)
+{
+	char page[PROC_READ_PAGE_SIZE] = {0};
+	char read_data[PROC_READ_MAX_SIZE] = {0};
+	int len = 0;
+
+	read_data[0] = '1';
+	len = sprintf(page, "%s", read_data);
+	if(len > *off) {
+		len -= *off;
+	} else {
+		len = 0;
+	}
+	if (copy_to_user(buff, page, (len < count ? len : count))) {
+		return -EFAULT;
+	}
+	*off += len < count ? len : count;
+	return (len < count ? len : count);
+}
+
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 10, 0))
+static const struct file_operations proc_integrate_gauge_fcc_flag_ops =
+{
+	.read  = proc_integrate_gauge_fcc_flag_read,
+	.open  = simple_open,
+	.owner = THIS_MODULE,
+};
+#else
+static const struct proc_ops proc_integrate_gauge_fcc_flag_ops =
+{
+	.proc_read  = proc_integrate_gauge_fcc_flag_read,
+	.proc_open  = simple_open,
+};
+#endif
+
+
 static int init_charger_proc(struct oplus_chg_chip *chip)
 {
 	int ret = 0;
@@ -1817,6 +1856,12 @@ static int init_charger_proc(struct oplus_chg_chip *chip)
 						   &proc_charger_passedchg_ops, chip);
 	prEntry_tmp = proc_create_data("passedchg_reset_count", 0666, prEntry_da,
 					   &proc_charger_passedchg_reset_count_ops, chip);
+
+	prEntry_tmp = proc_create_data("integrate_gauge_fcc_flag", 0664, prEntry_da,
+					 &proc_integrate_gauge_fcc_flag_ops, chip);
+	if (prEntry_tmp == NULL)
+		chg_err("Couldn't create integrate_gauge_fcc_flag proc entry\n");
+
 	return 0;
 }
 

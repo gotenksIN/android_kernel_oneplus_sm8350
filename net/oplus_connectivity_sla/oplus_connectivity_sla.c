@@ -739,12 +739,13 @@ static int mark_game_app_skb(struct nf_conn *ct, struct sk_buff *skb,
 			(IPPROTO_UDP == iph->protocol ||
 				IPPROTO_TCP == iph->protocol)) {
 
-			//WZRY can not switch tcp packets
+			/*For WZRY, switch tcp and udp packets*/
+			/*
 			if (GAME_WZRY == game_index &&
 				IPPROTO_TCP == iph->protocol) {
 				return SLA_SKB_ACCEPT;
 			}
-
+			*/
 			ct_mark	= get_ct_mark(ct) & MARK_MASK;
 
 			if (GAME_CJZC == game_index &&

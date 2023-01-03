@@ -312,18 +312,6 @@
 #define F_LRA_VARIATION_HZ			5
 #define NON_HBOOST_MAX_VMAX_MV			4000
 
-#define FIFO_SAMPLES_SIZE_V1		104
-#define FIFO_SAMPLES_SIZE_V2		640
-#define FIFO_SAMPLES_SIZE_V3		1024
-
-#define FIFO_EMPTY_THRESHOLD_V1		48
-#define FIFO_EMPTY_THRESHOLD_V2		280
-#define FIFO_EMPTY_THRESHOLD_V3		288
-
-#define FIFO_THRESHOLD_BIT_V1		4
-#define FIFO_THRESHOLD_BIT_V2		40
-#define FIFO_THRESHOLD_BIT_V3		32
-
 #define is_between(val, min, max)	\
 	(((min) <= (max)) && ((min) <= (val)) && ((val) <= (max)))
 #define HAP_BOOST_CLAMP_5V_REG_OFFSET(chip)	\
@@ -665,20 +653,19 @@ struct haptics_reg_info {
 #ifdef RICHTAP_FOR_PMIC_ENABLE
 struct haptics_chip *g_richtap_ptr;
 #endif //RICHTAP_FOR_PMIC_ENABLE
-
 static inline int get_max_fifo_samples(struct haptics_chip *chip)
 {
 	int val = 0;
 
 	switch (chip->ptn_revision) {
 	case HAP_PTN_V1:
-		val = FIFO_SAMPLES_SIZE_V1;
+		val = 104;
 		break;
 	case HAP_PTN_V2:
-		val = FIFO_SAMPLES_SIZE_V2;
+		val = 640;
 		break;
 	case HAP_PTN_V3:
-		val = FIFO_SAMPLES_SIZE_V3;
+		val = 1024;
 		break;
 	default:
 		pr_err("Invalid pattern revision\n");
@@ -694,13 +681,13 @@ static int get_fifo_empty_threshold(struct haptics_chip *chip)
 
 	switch (chip->ptn_revision) {
 	case HAP_PTN_V1:
-		val = FIFO_EMPTY_THRESHOLD_V1;
+		val = 48;
 		break;
 	case HAP_PTN_V2:
-		val = FIFO_EMPTY_THRESHOLD_V2;
+		val = 280;
 		break;
 	case HAP_PTN_V3:
-		val = FIFO_EMPTY_THRESHOLD_V3;
+		val = 288;
 		break;
 	default:
 		pr_err("Invalid pattern revision\n");
@@ -716,13 +703,13 @@ static int get_fifo_threshold_per_bit(struct haptics_chip *chip)
 
 	switch (chip->ptn_revision) {
 	case HAP_PTN_V1:
-		val = FIFO_THRESHOLD_BIT_V1;
+		val = 4;
 		break;
 	case HAP_PTN_V2:
-		val = FIFO_THRESHOLD_BIT_V2;
+		val = 40;
 		break;
 	case HAP_PTN_V3:
-		val = FIFO_THRESHOLD_BIT_V3;
+		val = 32;
 		break;
 	default:
 		pr_err("Invalid pattern revision\n");
@@ -1435,7 +1422,7 @@ static int haptics_boost_vreg_enable(struct haptics_chip *chip, bool en)
 static bool is_swr_play_enabled(struct haptics_chip *chip)
 {
 	int rc;
-	u8 val[2];
+	u8 val[2] = {0};
 
 	rc = haptics_get_status_data(chip, HAP_DRV_STS, val);
 	if (rc < 0)

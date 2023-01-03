@@ -308,6 +308,11 @@ static void add_dmabuf_list(struct kgsl_dma_buf_meta *meta)
 
 	/* This is a new buffer. Add a new entry for it */
 	dle = kzalloc(sizeof(*dle), GFP_ATOMIC);
+	if (dle == NULL) {
+		pr_info("[QCOM debug] %s retry once with GFP_KERNEL\n", __func__);
+		dle = kzalloc(sizeof(*dle), GFP_KERNEL);
+	}
+
 	if (dle) {
 		dle->firstpage = page;
 		INIT_LIST_HEAD(&dle->dmabuf_list);

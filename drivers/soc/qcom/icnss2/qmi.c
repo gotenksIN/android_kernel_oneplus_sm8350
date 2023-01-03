@@ -804,6 +804,11 @@ int icnss_wlfw_wlan_mac_req_send_sync(struct icnss_priv *priv,
 	struct wlfw_mac_addr_resp_msg_v01 resp = {0};
 	struct qmi_txn txn;
 	int ret;
+#if IS_ENABLED(CONFIG_OPLUS_FEATURE_WIFI_MAC)
+//revert for factory write mac address order: write from mac_address[5] to mac_address[0],so mac address[5] is first
+	int i;
+	char revert_mac[QMI_WLFW_MAC_ADDR_SIZE_V01];
+# endif /* CONFIG_OPLUS_FEATURE_WIFI_MAC */
 
 	if (!priv || !mac || mac_len != QMI_WLFW_MAC_ADDR_SIZE_V01)
 		return -EINVAL;
@@ -817,9 +822,22 @@ int icnss_wlfw_wlan_mac_req_send_sync(struct icnss_priv *priv,
 		goto out;
 	}
 
+#if IS_ENABLED(CONFIG_OPLUS_FEATURE_WIFI_MAC)
+//revert for factory write mac address order: write from mac_address[5] to mac_address[0],so mac address[5] is first
+	icnss_pr_info("Sending WLAN mac req [%pM], state: 0x%lx\n",
+		      mac, priv->state);
+	for (i = 0; i < QMI_WLFW_MAC_ADDR_SIZE_V01 ; i ++){
+		revert_mac[i] = mac[QMI_WLFW_MAC_ADDR_SIZE_V01 - i -1];
+	}
+	icnss_pr_info("Sending revert WLAN mac req [%pM], state: 0x%lx\n",
+		      revert_mac, priv->state);
+	memcpy(req.mac_addr, revert_mac, mac_len);
+#else
 	icnss_pr_dbg("Sending WLAN mac req [%pM], state: 0x%lx\n",
 			     mac, priv->state);
 	memcpy(req.mac_addr, mac, mac_len);
+#endif /* CONFIG_OPLUS_FEATURE_WIFI_MAC */
+
 	req.mac_addr_valid = 1;
 
 	ret = qmi_send_request(&priv->qmi, NULL, &txn,

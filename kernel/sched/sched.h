@@ -2,6 +2,9 @@
 /*
  * Scheduler internal types and methods:
  */
+#ifndef __KERNEL_SCHED_H__
+#define __KERNEL_SCHED_H__
+
 #include <linux/sched.h>
 
 #include <linux/sched/autogroup.h>
@@ -211,12 +214,6 @@ extern cpumask_t asym_cap_sibling_cpus;
 /* task_struct::on_rq states: */
 #define TASK_ON_RQ_QUEUED	1
 #define TASK_ON_RQ_MIGRATING	2
-
-#if defined(OPLUS_FEATURE_SCHED_ASSIST) && defined(CONFIG_OPLUS_FEATURE_SCHED_ASSIST)
-#ifdef CONFIG_MMAP_LOCK_OPT
-extern int sysctl_uxchain_v2;
-#endif
-#endif
 
 extern __read_mostly int scheduler_running;
 
@@ -3461,4 +3458,6 @@ static inline void walt_irq_work_queue(struct irq_work *work)
 {
 	irq_work_queue(work);
 }
+#endif
+
 #endif

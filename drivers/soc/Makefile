@@ -89,3 +89,7 @@ obj-$(CONFIG_OPLUS_FEATURE_SUGOV_POWER_EFFIENCY) += oplus/cpufreq_effiency/
 #ifdef OPLUS_FEATURE_OCH
 obj-$(CONFIG_OPLUS_FEATURE_OCH) += oplus/cpufreq_health/
 #endif
+
+#ifdef OPLUS_FEATURE_GAME_OPT
+obj-$(CONFIG_OPLUS_FEATURE_GAME_OPT) += oplus/game_opt/
+#endif /* OPLUS_FEATURE_GAME_OPT */

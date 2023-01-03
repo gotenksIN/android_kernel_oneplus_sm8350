@@ -15,7 +15,7 @@
 ### ------------------------------------------------------------------------------
 ##################################################################################
 
--include ../../out/oplus_native_features.mk
+-include oplus_native_features.mk
 
 ###ifdef OPLUS_ARCH_INJECT
 OPLUS_CONNECTIVITY_NATIVE_FEATURE_SET :=
@@ -69,6 +69,10 @@ OPLUS_FEATURE_EDTASK_IMPROVE  \
 OPLUS_FEATURE_WIFI_SLA  \
 OPLUS_FEATURE_DHCP  \
 OPLUS_FEATURE_PHOENIX  \
+OPLUS_FEATURE_PHOENIX_REBOOT_SPEED \
+OPLUS_FEATURE_KMSG_WB \
+OPLUS_FEATURE_SHUTDOWN_SPEED \
+OPLUS_FEATURE_OLC \
 OPLUS_FEATURE_DUMPDEVICE  \
 OPLUS_FEATURE_SAUPWK  \
 OPLUS_FEATURE_MEMORY_ISOLATE  \
@@ -164,27 +168,6 @@ $(warning "OPLUS_VND_ENV_CHG_OP9RT_PMIC_VOOCPHY is $(strip $(OPLUS_VND_ENV_CHG_O
 ifeq ($(OPLUS_VND_ENV_CHG_OP9RT_PMIC_VOOCPHY),yes)
 export CONFIG_OPLUS_CHG_OP9RT_PMIC_VOOCPHY=y
 endif
-
-#ifdef OPLUS_FEATURE_POWERINFO_STANDBY
-inner_mk_path := $(abspath $(lastword $(MAKEFILE_LIST)))
-inner_mk_dir := $(shell dirname $(inner_mk_path))
-inner_oplus_wakelock_dir1 := $(inner_mk_dir)/../vendor/oplus/kernel/wakelock_profiler
-inner_oplus_wakelock_dir2 := $(inner_mk_dir)/../vendor/oplus/kernel/oplus_wakelock_profiler
-inner_oplus_wakelock_dir1_exist := $(shell if [ -d $(inner_oplus_wakelock_dir1) ]; then echo "exist"; else echo "notexist"; fi;)
-inner_oplus_wakelock_dir2_exist := $(shell if [ -d $(inner_oplus_wakelock_dir2) ]; then echo "exist"; else echo "notexist"; fi;)
-
-inner_oplus_link_name := oplus_wakelock
-inner_oplus_link_target := $(inner_mk_dir)/../kernel/msm-5.4/drivers/soc/oplus/$(inner_oplus_link_name)
-ifeq ($(inner_oplus_wakelock_dir1_exist), exist)
-$(warning "source is $(inner_oplus_wakelock_dir1)")
-$(shell ln -sf $(inner_oplus_wakelock_dir1) $(inner_oplus_link_target))
-else ifeq ($(inner_oplus_wakelock_dir2_exist), exist)
-$(warning "source is $(inner_oplus_wakelock_dir2)")
-$(shell ln -sf $(inner_oplus_wakelock_dir2) $(inner_oplus_link_target))
-else
-$(warning "source is nothing")
-endif
-#endif /* OPLUS_FEATURE_POWERINFO_STANDBY */
 
 KBUILD_CFLAGS += -DOPLUS_FEATURE_LOWMEM_DBG
 

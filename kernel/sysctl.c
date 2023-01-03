@@ -115,6 +115,13 @@
 #include <linux/sched_assist/sched_assist_slide.h>
 #endif /* defined(OPLUS_FEATURE_SCHED_ASSIST) && defined(CONFIG_OPLUS_FEATURE_SCHED_ASSIST) */
 
+#ifdef CONFIG_OPLUS_BINDER_STRATEGY
+#include <soc/oplus/healthinfo.h>
+extern int sysctl_ob_control_enable;
+extern int ob_pid;
+extern int sysctl_ob_control_handler(struct ctl_table *table, int write, void __user *buffer, size_t *lenp, loff_t *ppos);
+#endif
+
 /* External variables not in a header file. */
 extern int suid_dumpable;
 #ifdef CONFIG_COREDUMP
@@ -135,12 +142,6 @@ extern int sysctl_nr_trim_pages;
 /* Constants used for minimum and  maximum */
 #ifdef CONFIG_LOCKUP_DETECTOR
 static int sixty = 60;
-#endif
-
-#if defined(OPLUS_FEATURE_SCHED_ASSIST) && defined(CONFIG_OPLUS_FEATURE_SCHED_ASSIST)
-#ifdef CONFIG_MMAP_LOCK_OPT
-int sysctl_uxchain_v2 = 1;
-#endif
 #endif
 
 static int __maybe_unused neg_one = -1;
@@ -1657,6 +1658,22 @@ static struct ctl_table kern_table[] = {
 		.extra2		= SYSCTL_ONE,
 	},
 #endif
+#ifdef CONFIG_OPLUS_BINDER_STRATEGY
+	{
+		.procname	= "oplus_binder_control_enabled",
+		.data		= &sysctl_ob_control_enable,
+		.maxlen 	= sizeof(int),
+		.mode		= 0660,
+		.proc_handler = sysctl_ob_control_handler,
+	},
+	{
+		.procname	= "oplus_bg_thread_pid",
+		.data		= &ob_pid,
+		.maxlen 	= sizeof(int),
+		.mode		= 0660,
+		.proc_handler = proc_dointvec,
+	},
+#endif
 #ifdef CONFIG_STACKLEAK_RUNTIME_DISABLE
 	{
 		.procname	= "stack_erasing",
@@ -1711,15 +1728,6 @@ static struct ctl_table kern_table[] = {
 		.mode		= 0666,
 		.proc_handler = sysctl_sched_assist_input_boost_ctrl_handler,
 	},
-#ifdef CONFIG_MMAP_LOCK_OPT
-	{
-		.procname	= "uxchain_v2",
-		.data		= &sysctl_uxchain_v2,
-		.maxlen = sizeof(int),
-		.mode		= 0666,
-		.proc_handler = proc_dointvec,
-	},
-#endif
 #endif /* defined(OPLUS_FEATURE_SCHED_ASSIST) && defined(CONFIG_OPLUS_FEATURE_SCHED_ASSIST) */
 #ifdef OPLUS_FEATURE_TASK_CPUSTATS
 #ifdef CONFIG_OPLUS_CTP

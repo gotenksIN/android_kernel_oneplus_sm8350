@@ -109,6 +109,7 @@ obj-$(CONFIG_HMM_MIRROR) += hmm.o
 obj-$(CONFIG_MEMFD_CREATE) += memfd.o
 obj-$(CONFIG_OPLUS_FEATURE_ZRAM_OPT) += zram_opt/
 obj-$(CONFIG_PROCESS_RECLAIM_ENHANCE) += process_reclaim/
+obj-$(CONFIG_DAMON) += damon/
 obj-$(CONFIG_VIRTUAL_RESERVE_MEMORY) += reserve_area.o
 #ifdef OPLUS_FEATURE_HEALTHINFO
 obj-$(CONFIG_OPLUS_HEALTHINFO) += healthinfo/

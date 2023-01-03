@@ -28,7 +28,7 @@ int j = 0;
 char *chip_name = NULL;
 /*if can not compile success, please update vendor/oplus_touchsreen*/
 struct tp_dev_name tp_dev_names[] = {
-	{TP_OFILM, "OFILM"},
+	{TP_OFILM, "OLIM"},
 	{TP_BIEL, "BIEL"},
 	{TP_TRULY, "TRULY"},
 	{TP_BOE, "BOE"},

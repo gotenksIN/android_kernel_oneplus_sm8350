@@ -47,6 +47,9 @@
 #if defined(OPLUS_FEATURE_SCHED_ASSIST) && defined(CONFIG_OPLUS_FEATURE_SCHED_ASSIST)
 #include <../special_opt/special_opt.h>
 #endif /* defined(OPLUS_FEATURE_SCHED_ASSIST) && defined(CONFIG_OPLUS_FEATURE_SCHED_ASSIST) */
+#ifdef CONFIG_OPLUS_FEATURE_GAME_OPT
+#include "../../drivers/soc/oplus/game_opt/game_ctrl.h"
+#endif
 
 #ifdef CONFIG_SMP
 static inline bool task_fits_max(struct task_struct *p, int cpu);
@@ -63,6 +66,11 @@ static inline bool task_fits_max(struct task_struct *p, int cpu);
 #ifdef CONFIG_OPLUS_FEATURE_INPUT_BOOST
 #include <linux/tuning/webview_boost.h>
 #endif
+
+#if IS_ENABLED(CONFIG_OPLUS_FEATURE_CPU_JANKINFO)
+#include <linux/cpu_jankinfo/jank_tasktrack.h>
+#endif
+
 /*
  * Targeted preemption latency for CPU-bound tasks:
  *
@@ -920,8 +928,15 @@ static void update_curr(struct cfs_rq *cfs_rq)
 
 	if (entity_is_task(curr)) {
 		struct task_struct *curtask = task_of(curr);
-
+#ifdef CONFIG_OPLUS_FEATURE_GAME_OPT
+		g_update_task_runtime(curtask, delta_exec);
+#endif
 		trace_sched_stat_runtime(curtask, delta_exec, curr->vruntime);
+
+#if IS_ENABLED(CONFIG_OPLUS_FEATURE_CPU_JANKINFO)
+		jankinfo_tasktrack_update_time(curtask, TRACE_RUNNING, delta_exec);
+#endif
+
 		cgroup_account_cputime(curtask, delta_exec);
 		account_group_exec_runtime(curtask, delta_exec);
 #ifdef OPLUS_FEATURE_HEALTHINFO
@@ -980,6 +995,9 @@ update_stats_wait_end(struct cfs_rq *cfs_rq, struct sched_entity *se)
 			return;
 		}
 		trace_sched_stat_wait(p, delta);
+#if IS_ENABLED(CONFIG_OPLUS_FEATURE_CPU_JANKINFO)
+		jankinfo_tasktrack_update_time(p, TRACE_RUNNABLE, delta);
+#endif
 
 #if defined(OPLUS_FEATURE_TASK_CPUSTATS) && defined(CONFIG_OPLUS_SCHED)
 		update_task_sched_info(p, delta, task_sched_info_runnable, cpu_of(rq_of(cfs_rq)));
@@ -1038,6 +1056,9 @@ update_stats_enqueue_sleeper(struct cfs_rq *cfs_rq, struct sched_entity *se)
 		if (tsk) {
 			account_scheduler_latency(tsk, delta >> 10, 1);
 			trace_sched_stat_sleep(tsk, delta);
+#if IS_ENABLED(CONFIG_OPLUS_FEATURE_CPU_JANKINFO)
+			jankinfo_tasktrack_update_time(tsk, TRACE_SLEEPING, delta);
+#endif
 
 #if defined(OPLUS_FEATURE_TASK_CPUSTATS) && defined(CONFIG_OPLUS_SCHED)
 			update_task_sched_info(tsk, delta, task_sched_info_S, task_cpu(tsk));
@@ -1077,6 +1098,11 @@ update_stats_enqueue_sleeper(struct cfs_rq *cfs_rq, struct sched_entity *se)
 				__schedstat_add(se->statistics.iowait_sum, delta);
 				__schedstat_inc(se->statistics.iowait_count);
 				trace_sched_stat_iowait(tsk, delta);
+
+#if IS_ENABLED(CONFIG_OPLUS_FEATURE_CPU_JANKINFO)
+				jankinfo_tasktrack_update_time(tsk, TRACE_DISKSLEEP_INIOWAIT, delta);
+#endif
+
 #ifdef OPLUS_FEATURE_HEALTHINFO
 #ifdef CONFIG_OPLUS_HEALTHINFO
 // Add for get iowait
@@ -1091,7 +1117,14 @@ update_stats_enqueue_sleeper(struct cfs_rq *cfs_rq, struct sched_entity *se)
 			}
 #endif
 #endif /* OPLUS_FEATURE_HEALTHINFO */
+#ifdef CONFIG_OPLUS_FEATURE_GAME_OPT
+                        g_sched_stat_blocked(tsk, delta);
+#endif
 			trace_sched_stat_blocked(tsk, delta);
+#if IS_ENABLED(CONFIG_OPLUS_FEATURE_CPU_JANKINFO)
+			jankinfo_tasktrack_update_time(tsk, TRACE_DISKSLEEP, delta);
+#endif
+
 #ifdef OPLUS_FEATURE_HEALTHINFO
 #ifdef CONFIG_OPLUS_JANK_INFO
 			update_jank_trace_info(tsk, JANK_TRACE_DSTATE, 0, delta);

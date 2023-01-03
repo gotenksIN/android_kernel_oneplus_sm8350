@@ -48,6 +48,14 @@
 #include <linux/tuning/frame_info.h>
 #endif
 
+#ifdef CONFIG_OPLUS_FEATURE_GAME_OPT
+#include "../../drivers/soc/oplus/game_opt/game_ctrl.h"
+#endif
+
+#if IS_ENABLED(CONFIG_OPLUS_FEATURE_CPU_JANKINFO)
+#include <linux/cpu_jankinfo/sa_jankinfo.h>
+#endif
+
 /*
  * Export tracepoints that act as a bare tracehook (ie: have no trace event
  * associated with them) to allow external modules to probe them.
@@ -1435,6 +1443,9 @@ static inline void enqueue_task(struct rq *rq, struct task_struct *p, int flags)
 	}
 
 	uclamp_rq_inc(rq, p);
+#if IS_ENABLED(CONFIG_OPLUS_FEATURE_CPU_JANKINFO)
+	jankinfo_android_rvh_enqueue_task_handler(NULL, rq, p, flags);
+#endif
 	p->sched_class->enqueue_task(rq, p, flags);
 	walt_update_last_enqueue(p);
 	trace_sched_enq_deq_task(p, 1, cpumask_bits(&p->cpus_mask)[0]);
@@ -1570,18 +1581,6 @@ static inline void check_class_changed(struct rq *rq, struct task_struct *p,
 void check_preempt_curr(struct rq *rq, struct task_struct *p, int flags)
 {
 	const struct sched_class *class;
-
-#if defined(OPLUS_FEATURE_SCHED_ASSIST) && defined(CONFIG_OPLUS_FEATURE_SCHED_ASSIST)
-#ifdef CONFIG_MMAP_LOCK_OPT
-	u64 wallclock = sched_clock();
-
-	if (sysctl_uxchain_v2 &&
-		wallclock - rq->curr->get_mmlock_ts < PREEMPT_DISABLE_RWSEM &&
-		rq->curr->get_mmlock &&
-		!(p->flags & PF_WQ_WORKER) && !task_has_rt_policy(p))
-		return;
-#endif
-#endif
 
 	if (p->sched_class == rq->curr->sched_class) {
 		rq->curr->sched_class->check_preempt_curr(rq, p, flags);
@@ -2886,6 +2885,9 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags,
 		atomic_dec(&task_rq(p)->nr_iowait);
 	}
 
+#ifdef CONFIG_OPLUS_FEATURE_GAME_OPT
+	g_rt_try_to_wake_up(p);
+#endif
 	cpu = select_task_rq(p, p->wake_cpu, SD_BALANCE_WAKE, wake_flags,
 			     sibling_count_hint);
 	if (task_cpu(p) != cpu) {
@@ -3546,7 +3548,9 @@ static struct rq *finish_task_switch(struct task_struct *prev)
 		 * task and put them back on the free list.
 		 */
 		kprobe_flush_task(prev);
-
+#ifdef CONFIG_OPLUS_FEATURE_GAME_OPT
+		g_rt_task_dead(prev);
+#endif
 		walt_task_dead(prev);
 		/* Task is done with its stack. */
 		put_task_stack(prev);
@@ -4411,6 +4415,11 @@ static void __sched notrace __schedule(bool preempt)
 	clear_preempt_need_resched();
 
 	wallclock = sched_ktime_clock();
+
+#if IS_ENABLED(CONFIG_OPLUS_FEATURE_CPU_JANKINFO)
+	jankinfo_android_rvh_schedule_handler(NULL, prev, next, rq);
+#endif
+
 	if (likely(prev != next)) {
 #ifdef CONFIG_SCHED_WALT
 		if (!prev->on_rq)

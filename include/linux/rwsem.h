@@ -58,17 +58,6 @@ struct rw_semaphore {
 #endif /* defined(OPLUS_FEATURE_SCHED_ASSIST) && defined(CONFIG_OPLUS_FEATURE_SCHED_ASSIST) */
 };
 
-
-#if defined(OPLUS_FEATURE_SCHED_ASSIST) && defined(CONFIG_OPLUS_FEATURE_SCHED_ASSIST)
-#ifdef CONFIG_MMAP_LOCK_OPT
-extern void uxchain_rwsem_wake(struct task_struct *tsk,
-	struct rw_semaphore *sem);
-extern void uxchain_rwsem_down(struct rw_semaphore *sem);
-extern void uxchain_rwsem_up(struct rw_semaphore *sem);
-#define PREEMPT_DISABLE_RWSEM 5000000
-#endif
-#endif
-
 #if defined(OPLUS_FEATURE_SCHED_ASSIST) && defined(CONFIG_OPLUS_FEATURE_SCHED_ASSIST)
 #include <linux/sched_assist/sched_assist_rwsem.h>
 #endif /* OPLUS_FEATURE_SCHED_ASSIST */

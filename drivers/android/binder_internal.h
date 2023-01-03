@@ -180,6 +180,9 @@ struct binder_work {
 		BINDER_WORK_DEAD_BINDER_AND_CLEAR,
 		BINDER_WORK_CLEAR_DEATH_NOTIFICATION,
 	} type;
+#ifdef CONFIG_OPLUS_BINDER_STRATEGY
+	u64 ob_begin;
+#endif
 };
 
 struct binder_error {

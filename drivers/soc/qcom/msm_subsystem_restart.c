@@ -32,7 +32,6 @@
 #include <asm/current.h>
 #include <linux/timer.h>
 #include <linux/string.h>
-#include <soc/oplus/system/oplus_project.h>
 
 #define CREATE_TRACE_POINTS
 #include <trace/events/trace_msm_ssr_event.h>
@@ -1327,9 +1326,6 @@ int subsystem_restart_dev(struct subsys_device *dev)
 
 #ifdef OPLUS_FEATURE_WIFI_DCS_SWITCH
 	__wlan_subsystem_send_uevent(&(dev->dev), "", dev->desc->name);
-	if (name && !strcmp(name, "wlan") && (get_eng_version() == AGING)) {
-		dev->restart_level = RESET_SUBSYS_COUPLED;
-	}
 #endif /* OPLUS_FEATURE_WIFI_DCS_SWITCH */
 
 	subsys_send_early_notifications(dev->early_notify);

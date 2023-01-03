@@ -97,6 +97,10 @@ obj-$(CONFIG_OPLUS_FEATURE_NWPOWER) += oplus_nwpower/
 obj-$(CONFIG_OPLUS_FEATURE_WIFI_SLA)                  	+= oplus_connectivity_sla/
 #endif /* OPLUS_FEATURE_WIFI_SLA */
 
+#ifdef OPLUS_FEATURE_WIFI_ROUTERBOOST
+obj-$(CONFIG_OPLUS_FEATURE_WIFI_ROUTERBOOST) += oplus_connectivity_routerboost/
+#endif /* OPLUS_FEATURE_WIFI_ROUTERBOOST */
+
 #ifdef OPLUS_FEATURE_CONNECTIVITY_LUCKYMONEY
 obj-$(CONFIG_OPLUS_FEATURE_WIFI_LUCKYMONEY) += oplus_connectivity_luckymoney/
 #endif /*OPLUS_FEATURE_CONNECTIVITY_LUCKYMONEY */

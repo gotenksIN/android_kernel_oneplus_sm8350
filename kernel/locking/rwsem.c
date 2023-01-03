@@ -423,11 +423,6 @@ static void rwsem_mark_wake(struct rw_semaphore *sem,
 
 	if (waiter->type == RWSEM_WAITING_FOR_WRITE) {
 		if (wake_type == RWSEM_WAKE_ANY) {
-#if defined(OPLUS_FEATURE_SCHED_ASSIST) && defined(CONFIG_OPLUS_FEATURE_SCHED_ASSIST)
-#ifdef CONFIG_MMAP_LOCK_OPT
-			uxchain_rwsem_wake(waiter->task, sem);
-#endif
-#endif
 			/*
 			 * Mark writer at the front of the queue for wakeup.
 			 * Until the task is actually later awoken later by
@@ -556,11 +551,6 @@ static void rwsem_mark_wake(struct rw_semaphore *sem,
 		 * to the task to wakeup.
 		 */
 		smp_store_release(&waiter->task, NULL);
-#if defined(OPLUS_FEATURE_SCHED_ASSIST) && defined(CONFIG_OPLUS_FEATURE_SCHED_ASSIST)
-#ifdef CONFIG_MMAP_LOCK_OPT
-		uxchain_rwsem_wake(tsk, sem);
-#endif
-#endif
 		/*
 		 * Ensure issuing the wakeup (either by us or someone else)
 		 * after setting the reader waiter to nil.
@@ -1464,11 +1454,6 @@ static inline int __down_read_trylock(struct rw_semaphore *sem)
 		if (atomic_long_try_cmpxchg_acquire(&sem->count, &tmp,
 					tmp + RWSEM_READER_BIAS)) {
 			rwsem_set_reader_owned(sem);
-#if defined(OPLUS_FEATURE_SCHED_ASSIST) && defined(CONFIG_OPLUS_FEATURE_SCHED_ASSIST)
-#ifdef CONFIG_MMAP_LOCK_OPT
-			uxchain_rwsem_down(sem);
-#endif
-#endif
 			return 1;
 		}
 	} while (!(tmp & RWSEM_READ_FAILED_MASK));
@@ -1513,12 +1498,6 @@ static inline int __down_write_trylock(struct rw_semaphore *sem)
 	if (atomic_long_try_cmpxchg_acquire(&sem->count, &tmp,
 					    RWSEM_WRITER_LOCKED)) {
 		rwsem_set_owner(sem);
-#if defined(OPLUS_FEATURE_SCHED_ASSIST) && defined(CONFIG_OPLUS_FEATURE_SCHED_ASSIST)
-#ifdef CONFIG_MMAP_LOCK_OPT
-		if(tmp == RWSEM_UNLOCKED_VALUE)
-			uxchain_rwsem_down(sem);
-#endif
-#endif
 		return true;
 	}
 	return false;
@@ -1540,11 +1519,6 @@ inline void __up_read(struct rw_semaphore *sem)
 	if (unlikely((tmp & (RWSEM_LOCK_MASK|RWSEM_FLAG_WAITERS)) ==
 		      RWSEM_FLAG_WAITERS)) {
 		clear_wr_nonspinnable(sem);
-#if defined(OPLUS_FEATURE_SCHED_ASSIST) && defined(CONFIG_OPLUS_FEATURE_SCHED_ASSIST)
-#ifdef CONFIG_MMAP_LOCK_OPT
-		uxchain_rwsem_up(sem);
-#endif
-#endif
 		rwsem_wake(sem, tmp);
 	}
 }
@@ -1566,14 +1540,8 @@ static inline void __up_write(struct rw_semaphore *sem)
 
 	rwsem_clear_owner(sem);
 	tmp = atomic_long_fetch_add_release(-RWSEM_WRITER_LOCKED, &sem->count);
-	if (unlikely(tmp & RWSEM_FLAG_WAITERS)) {
-#if defined(OPLUS_FEATURE_SCHED_ASSIST) && defined(CONFIG_OPLUS_FEATURE_SCHED_ASSIST)
-#ifdef CONFIG_MMAP_LOCK_OPT
-		uxchain_rwsem_up(sem);
-#endif
-#endif
+	if (unlikely(tmp & RWSEM_FLAG_WAITERS))
 		rwsem_wake(sem, tmp);
-	}
 }
 
 /*

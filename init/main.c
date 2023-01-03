@@ -1158,6 +1158,10 @@ void __weak free_initmem(void)
 	free_initmem_default(POISON_FREE_INITMEM);
 }
 
+#if IS_BUILTIN(CONFIG_OPLUS_FEATURE_PHOENIX_REBOOT_SPEED)
+extern void bootprof_log_boot(char *str);
+#endif
+
 static int __ref kernel_init(void *unused)
 {
 	int ret;
@@ -1184,6 +1188,9 @@ static int __ref kernel_init(void *unused)
 #if IS_ENABLED(CONFIG_OPLUS_FEATURE_PHOENIX)
 	if(phx_set_boot_stage)
 		phx_set_boot_stage(KERNEL_INIT_DONE);
+#endif
+#if IS_BUILTIN(CONFIG_OPLUS_FEATURE_PHOENIX_REBOOT_SPEED)
+	bootprof_log_boot("Kernel_init_done");
 #endif
 #ifdef CONFIG_QGKI_MSM_BOOT_TIME_MARKER
 	place_marker("M - DRIVER Kernel Boot Done");

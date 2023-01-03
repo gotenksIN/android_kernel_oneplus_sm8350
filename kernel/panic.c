@@ -223,7 +223,8 @@ void panic(const char *fmt, ...)
 #ifdef CONFIG_OPLUS_FEATURE_DUMP_REASON
 	function_name = parse_function_builtin_return_address(
 			(unsigned long)__builtin_return_address(0));
-	save_dump_reason_to_smem(buf, function_name);
+	if (function_name)
+		save_dump_reason_to_smem(buf, function_name);
 #endif
 
 #ifdef CONFIG_DEBUG_BUGVERBOSE
